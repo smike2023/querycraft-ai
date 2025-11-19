@@ -310,7 +310,7 @@ To get the most out of QueryCraft AI:
 - Monaco Editor
 - Vite
 
-**Developed by**: MiniMax Agent
+**Developed by**: QueryCraft AI Contributors
 **Development Platform**: AI-powered full-stack development
 
 ---

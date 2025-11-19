@@ -468,4 +468,4 @@ curl -X POST https://xxx.supabase.co/functions/v1/test-connection \
 
 ---
 
-**Built with excellence by MiniMax Agent** 🚀
+**Built with excellence** 🚀
