@@ -23,7 +23,7 @@
     "typescript",
     "supabase"
   ],
-  "private": false,
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
