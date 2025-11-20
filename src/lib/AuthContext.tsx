@@ -31,14 +31,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const createProfileIfNotExists = async (user: User) => {
     try {
-      const { data: existingProfile } = await supabase
+      // Add timeout to prevent hanging
+      const checkPromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile check timeout')), 5000)
+      );
+
+      const { data: existingProfile } = await Promise.race([checkPromise, timeoutPromise]) as any;
+
       if (!existingProfile) {
-        const { error } = await supabase
+        const createPromise = supabase
           .from('profiles')
           .insert({
             id: user.id,
@@ -49,6 +56,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               language: 'en',
             },
           });
+
+        const createTimeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Profile creation timeout')), 5000)
+        );
+
+        const { error } = await Promise.race([createPromise, createTimeoutPromise]) as any;
 
         if (error) {
           console.error('Error creating profile:', error);
@@ -61,11 +74,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loadProfile = async (userId: string) => {
     try {
-      const { data: profileData, error } = await supabase
+      // Add timeout to prevent hanging
+      const profilePromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
+
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile load timeout')), 5000)
+      );
+
+      const { data: profileData, error } = await Promise.race([profilePromise, timeoutPromise]) as any;
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error loading profile:', error);
@@ -83,15 +103,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session?.user) {
-        setUser(session.user);
-        await createProfileIfNotExists(session.user);
-        await loadProfile(session.user.id);
+      try {
+        // Add timeout to prevent infinite loading
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Session timeout')), 10000)
+        );
+
+        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        
+        if (session?.user) {
+          setUser(session.user);
+          await createProfileIfNotExists(session.user);
+          await loadProfile(session.user.id);
+        }
+      } catch (error) {
+        console.error('Error getting initial session:', error);
+        // Continue without user session - allow login
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
 
     getInitialSession();
@@ -101,16 +132,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       async (event, session) => {
         setLoading(true);
         
-        if (session?.user) {
-          setUser(session.user);
-          await createProfileIfNotExists(session.user);
-          await loadProfile(session.user.id);
-        } else {
-          setUser(null);
-          setProfile(null);
+        try {
+          if (session?.user) {
+            setUser(session.user);
+            // Add timeout to profile operations
+            await Promise.race([
+              Promise.all([
+                createProfileIfNotExists(session.user),
+                loadProfile(session.user.id)
+              ]),
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Profile operations timeout')), 10000)
+              )
+            ]);
+          } else {
+            setUser(null);
+            setProfile(null);
+          }
+        } catch (error) {
+          console.error('Error in auth state change:', error);
+          // Continue even if profile operations fail
+          if (session?.user) {
+            setUser(session.user);
+          } else {
+            setUser(null);
+            setProfile(null);
+          }
+        } finally {
+          setLoading(false);
         }
-        
-        setLoading(false);
 
         if (event === 'SIGNED_IN') {
           toast.success('Successfully signed in!');
