@@ -5,7 +5,10 @@ export type Json =
   | null
   | { [key: string]: Json | undefined }
   | Json[]
-  | { theme?: string }
+
+export interface ThemeConfig {
+  theme?: string
+}
 
 export interface Database {
   public: {
@@ -229,16 +232,22 @@ export interface SQLQuery {
 export interface Analytics {
   totalQueries: number
   averageExecutionTime: number
+  avgExecutionTime: number
   mostUsedCollections: string[]
   queryTypes: Record<string, number>
   successRate: number
+  slowQueries: number
 }
 
 export interface QueryHistory {
   id: string
   query: string
   executionTime: number
+  execution_time_ms: number
   resultCount: number
   timestamp: string
   status: 'success' | 'error'
+  success: boolean
+  collection_name: string
+  error_message?: string
 }
