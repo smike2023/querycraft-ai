@@ -101,26 +101,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    console.log('🔄 AuthContext: Initializing...');
     // Get initial session
     const getInitialSession = async () => {
       try {
+        console.log('🔄 AuthContext: Starting session check...');
         // Add timeout to prevent infinite loading
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise((_, reject) => 
           setTimeout(() => reject(new Error('Session timeout')), 10000)
         );
 
+        console.log('⏳ AuthContext: Waiting for session...');
         const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        console.log('✅ AuthContext: Session check completed:', session?.user ? 'User found' : 'No user');
         
         if (session?.user) {
+          console.log('👤 AuthContext: Setting user:', session.user.email);
           setUser(session.user);
+          console.log('👤 AuthContext: Creating profile...');
           await createProfileIfNotExists(session.user);
+          console.log('👤 AuthContext: Loading profile...');
           await loadProfile(session.user.id);
         }
       } catch (error) {
-        console.error('Error getting initial session:', error);
+        console.error('❌ AuthContext: Error getting initial session:', error);
         // Continue without user session - allow login
       } finally {
+        console.log('🎯 AuthContext: Setting loading to false');
         setLoading(false);
       }
     };
