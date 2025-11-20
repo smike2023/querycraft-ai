@@ -6,6 +6,7 @@ export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp } = useAuth();
 
@@ -15,11 +16,19 @@ export default function AuthPage() {
 
     try {
       if (isSignUp) {
-        await signUp(email, password);
-        toast.success('Account created! Please check your email to verify.');
+        const result = await signUp(email, password, fullName);
+        if (result.error) {
+          toast.error(result.error);
+        } else {
+          toast.success('Account created successfully!');
+        }
       } else {
-        await signIn(email, password);
-        toast.success('Welcome back!');
+        const result = await signIn(email, password);
+        if (result.error) {
+          toast.error(result.error);
+        } else {
+          toast.success('Welcome back!');
+        }
       }
     } catch (error: any) {
       toast.error(error.message || 'Authentication failed');
@@ -59,6 +68,18 @@ export default function AuthPage() {
               minLength={6}
             />
           </div>
+
+          {isSignUp && (
+            <div>
+              <label className="block text-sm font-medium mb-2">Full Name (Optional)</label>
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full px-4 py-2 rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+          )}
 
           <button
             type="submit"
