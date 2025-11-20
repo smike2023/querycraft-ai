@@ -18,9 +18,6 @@ function AppContent() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
-  console.log('🔄 AppContent: Loading state:', loading);
-  console.log('🔄 AppContent: User state:', user?.email || 'No user');
-
   useEffect(() => {
     if (profile?.preferences?.theme) {
       setTheme(profile.preferences.theme);
