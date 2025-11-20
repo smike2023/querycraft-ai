@@ -1,5 +1,3 @@
-import { Database } from './database.types';
-
 export type Json =
   | string
   | number
@@ -221,4 +219,20 @@ export interface NoSQLQuery {
 export interface SQLQuery {
   query: string
   params?: Record<string, any>
+}
+
+export interface Analytics {
+  totalQueries: number
+  averageExecutionTime: number
+  mostUsedCollections: string[]
+  queryTypes: Record<string, number>
+}
+
+export interface QueryHistory {
+  id: string
+  query: string
+  executionTime: number
+  resultCount: number
+  timestamp: string
+  status: 'success' | 'error'
 }
