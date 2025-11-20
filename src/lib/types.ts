@@ -5,6 +5,7 @@ export type Json =
   | null
   | { [key: string]: Json | undefined }
   | Json[]
+  | { theme?: string }
 
 export interface Database {
   public: {
@@ -157,7 +158,11 @@ export type Profile = Database['public']['Tables']['profiles']['Row']
 export type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
 export type ProfileUpdate = Database['public']['Tables']['profiles']['Update']
 
-export type MongoConnection = Database['public']['Tables']['connections']['Row']
+export type MongoConnection = Database['public']['Tables']['connections']['Row'] & {
+  tags?: string[]
+  connection_status?: string
+  color?: string
+}
 export type MongoConnectionInsert = Database['public']['Tables']['connections']['Insert']
 export type MongoConnectionUpdate = Database['public']['Tables']['connections']['Update']
 
@@ -226,6 +231,7 @@ export interface Analytics {
   averageExecutionTime: number
   mostUsedCollections: string[]
   queryTypes: Record<string, number>
+  successRate: number
 }
 
 export interface QueryHistory {
