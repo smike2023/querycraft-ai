@@ -21,11 +21,11 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      - name: Clean install
+      - name: Install dependencies
         run: |
-          rm -f package-lock.json
-          npm install --production=false --legacy-peer-deps
-          npm ci --legacy-peer-deps
+          node --version
+          npm --version
+          npm install --force --legacy-peer-deps
 
       - name: Build application
         run: npm run build
