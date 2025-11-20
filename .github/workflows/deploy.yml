@@ -34,4 +34,4 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           working-directory: .
           vercel-args: '--prod'
-          vercel-scope: sams-projects-87f2181e
+          vercel-scope: team_rrIbfOgEfeTsJkSQAprEKoqG
